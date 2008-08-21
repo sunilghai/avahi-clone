@@ -41,6 +41,7 @@
 #include <avahi-common/malloc.h>
 #include <avahi-common/error.h>
 #include <avahi-common/domain.h>
+#include <avahi-common/defs.h>
 
 #include "internal.h"
 #include "iface.h"
@@ -222,9 +223,9 @@ static AvahiEntry *server_add_llmnr_internal(
 
 	/* Type of the group should be UNSET/LLMNR */
 	AVAHI_CHECK_VALIDITY_RETURN_NULL(s, 
-										!g || 
-										g->type == AVAHI_GROUP_UNSET || 
-										g->type == AVAHI_GROUP_LLMNR, AVAHI_ERR_INVALID_GROUP);
+									!g || 
+									g->type == AVAHI_GROUP_UNSET || 
+									g->type == AVAHI_GROUP_LLMNR, AVAHI_ERR_INVALID_GROUP);
 
 	/* Flags should be LLMNR flags only */
 	AVAHI_CHECK_VALIDITY_RETURN_NULL(s, AVAHI_FLAGS_VALID(
@@ -243,8 +244,8 @@ static AvahiEntry *server_add_llmnr_internal(
 
 	AVAHI_CHECK_VALIDITY_RETURN_NULL(s,
                                     !g ||
-                                    (g->state != AVAHI_ENTRY_GROUP_LLMNR_ESTABLISHED && g->state != 
-                                    AVAHI_ENTRY_GROUP_LLMNR_VERIFYING) ||
+                                    (g->state != AVAHI_ENTRY_GROUP_LLMNR_ESTABLISHED && 
+									g->state != AVAHI_ENTRY_GROUP_LLMNR_VERIFYING) ||
                                     (flags & AVAHI_PUBLISH_UPDATE), AVAHI_ERR_BAD_STATE);
 
 	/* Copy Copy Copy. */	
@@ -292,7 +293,6 @@ static AvahiEntry *server_add_llmnr_internal(
 		if (g && g->type == AVAHI_GROUP_UNSET) {
 
 			g->proto.llmnr.n_verifying = 0;
-			g->proto.llmnr.n_entries = 0;
 			g->type = AVAHI_GROUP_LLMNR;
 	
 		    AVAHI_LLIST_HEAD_INIT(AvahiEntry, g->entries);
@@ -336,7 +336,7 @@ static AvahiEntry *server_add_llmnr_internal(
 			when group will be commited */
 			avahi_verify_entry(s, e); 
 	  }	
-/*	avahi_log_info("LLMNR Entry Added in server. : %s.%d.%d.%d.%d", e->record->key->name, e->record->key->clazz, e->record->key->type, e->interface, e->protocol );*/
+
     return e;
 }
 static AvahiEntry * server_add_internal(
@@ -381,10 +381,11 @@ static AvahiEntry * server_add_internal(
                                      (r->key->type != AVAHI_DNS_TYPE_IXFR) &&
                                      (r->key->type != AVAHI_DNS_TYPE_AXFR), AVAHI_ERR_INVALID_DNS_TYPE);
 
-	if (!g || 
-		g->type == AVAHI_GROUP_UNSET || 
+	/*if (!g || 
+		g->type == AVAHI_GROUP_UNSET ||
 		(g && !(flags & (AVAHI_PUBLISH_USE_MULTICAST | AVAHI_PUBLISH_USE_LLMNR | AVAHI_PUBLISH_USE_WIDE_AREA))) ) 
-	    transport_flags_from_domain(s, &flags, r->key->name, 1);
+		It's good to perform it, in any case. Above condition doesn't make any sense. :-/ */
+    transport_flags_from_domain(s, &flags, r->key->name, 1);
 
     AVAHI_CHECK_VALIDITY_RETURN_NULL(s, (flags & AVAHI_PUBLISH_USE_MULTICAST) || (flags & AVAHI_PUBLISH_USE_LLMNR), AVAHI_ERR_NOT_SUPPORTED);
 
@@ -534,10 +535,10 @@ const AvahiRecord *avahi_server_iterate(AvahiServer *s, AvahiSEntryGroup *g, voi
     return avahi_record_ref((*e)->record);
 }
 
-static void zone_dump(AvahiServer *s, AvahiDumpCallback callback, void* userdata, int proto) {
+static void zone_dump(AvahiServer *s, AvahiDumpCallback callback, void* userdata, AvahiPublishProtocol proto) {
 	AvahiEntry *e;
 
-    for (e = !proto ? s->mdns.entries : s->llmnr.entries; e; e = e->entries_next) {
+    for (e = ((proto == AVAHI_MDNS) ? (s->mdns.entries) : (s->llmnr.entries)); e; e = e->entries_next) {
         char *t;
         char ln[256];
 
@@ -561,11 +562,11 @@ int avahi_server_dump(AvahiServer *s, AvahiDumpCallback callback, void* userdata
     assert(callback);
 
     callback(";;; mDNS ZONE DUMP FOLLOWS ;;;", userdata);
-	zone_dump(s, callback, userdata, 0);
+	zone_dump(s, callback, userdata, AVAHI_MDNS);
     avahi_dump_caches(s->monitor, callback, userdata);
 
 	callback(";;; LLMNR ZONE DUMP FOLLOWS ;;;", userdata);
-	zone_dump(s, callback, userdata, 1);
+	zone_dump(s, callback, userdata, AVAHI_LLMNR);
 	avahi_llmnr_cache_dump(s->llmnr.llmnr_lookup_engine, callback, userdata);
 
     if (s->wide_area.wide_area_lookup_engine)
@@ -589,12 +590,14 @@ static AvahiEntry *server_add_ptr_internal(
     
     assert(s);
     assert(dest);
-	assert(name || (flags & AVAHI_PUBLISH_USE_MULTICAST || flags & AVAHI_PUBLISH_USE_LLMNR || flags & AVAHI_PUBLISH_USE_WIDE_AREA));
+
+/*	assert(name || (flags & (AVAHI_PUBLISH_USE_MULTICAST | AVAHI_PUBLISH_USE_LLMNR | AVAHI_PUBLISH_USE_WIDE_AREA));*/
 
     AVAHI_CHECK_VALIDITY_RETURN_NULL(s, !name || avahi_is_valid_domain_name(name), AVAHI_ERR_INVALID_HOST_NAME);
     AVAHI_CHECK_VALIDITY_RETURN_NULL(s, avahi_is_valid_domain_name(dest), AVAHI_ERR_INVALID_HOST_NAME);
 
     if (!name)
+		/* If _LLMNR flag is mentioned, this entry would be published using LLMNR otherwise mDNS (though that depends on system FQDN) */
         name = s->host_name_fqdn;
 
     if (!(r = avahi_record_new_full(name, AVAHI_DNS_CLASS_IN, AVAHI_DNS_TYPE_PTR, ttl))) {
@@ -711,10 +714,11 @@ int avahi_server_add_address(
     AvahiAddress *a) {
 
     char n[AVAHI_DOMAIN_NAME_MAX];
+	int ret_fqdn, null_name = 0;
 
     assert(s);
     assert(a);
-	assert(name || (flags & AVAHI_PUBLISH_USE_MULTICAST || flags & AVAHI_PUBLISH_USE_LLMNR || flags &  AVAHI_PUBLISH_USE_WIDE_AREA));
+/*	assert(name || (flags & (AVAHI_PUBLISH_USE_MULTICAST | AVAHI_PUBLISH_USE_LLMNR | AVAHI_PUBLISH_USE_WIDE_AREA));*/
 
     AVAHI_CHECK_VALIDITY(s, AVAHI_IF_VALID(interface), AVAHI_ERR_INVALID_INTERFACE);
     AVAHI_CHECK_VALIDITY(s, AVAHI_PROTO_VALID(protocol) && AVAHI_PROTO_VALID(a->proto), AVAHI_ERR_INVALID_PROTOCOL);
@@ -728,44 +732,40 @@ int avahi_server_add_address(
                                               AVAHI_PUBLISH_USE_MULTICAST|
 											  AVAHI_PUBLISH_USE_LLMNR), AVAHI_ERR_INVALID_FLAGS);
 
+	AVAHI_CHECK_VALIDITY(s,
+						!name ||
+						((flags & AVAHI_PUBLISH_USE_MULTICAST) ? (avahi_is_valid_fqdn(name)) : (avahi_is_valid_domain_name(name))), AVAHI_ERR_INVALID_HOST_NAME);
+
     /* Prepare the host name */
     if (!name) {
-		assert(((flags & AVAHI_PUBLISH_USE_LLMNR) && !(flags & AVAHI_PUBLISH_USE_MULTICAST)) ||
-			  (!(flags & AVAHI_PUBLISH_USE_LLMNR) || (flags & AVAHI_PUBLISH_USE_MULTICAST)) );
-
 		name = s->host_name_fqdn;
-
-		if (flags & AVAHI_PUBLISH_USE_MULTICAST) {
-		/* TODO : If default domain value has been changed by client? i.e fqdn != <hostname>.local?*/
-			return server_add_address_internal(s, g, interface, protocol, flags, name, a, AVAHI_DEFAULT_TTL_HOST_NAME);
-	
-		} else /*AVAHI_PUBLISH_USE_LLMNR*/ {
-			char *hostname = s->host_name;
-			int ret_hostname, ret_fqdn;
-
-			ret_hostname = server_add_address_internal(s, g, interface, protocol, flags, hostname, a, AVAHI_DEFAULT_LLMNR_TTL_HOST_NAME);
-
-			if (ret_hostname == AVAHI_OK)
-				ret_fqdn = server_add_address_internal(s, g, interface, protocol, flags |= AVAHI_PUBLISH_NO_REVERSE, name, a, AVAHI_DEFAULT_LLMNR_TTL_HOST_NAME);
-
-			else 
-				return ret_hostname;
-			/*TODO*/
-			return ret_fqdn;
-		}
-
+		null_name = 1;
 	} else {
-		/* Could be a single label hostname or valid FQDN */
-		AVAHI_CHECK_VALIDITY(s, flags & AVAHI_PUBLISH_USE_MULTICAST ? avahi_is_valid_fqdn(name) : avahi_is_valid_domain_name(name), AVAHI_ERR_INVALID_HOST_NAME);
-
 		AVAHI_ASSERT_TRUE(avahi_normalize_name(name, n, sizeof(n)));
-        name = n;
-	
-		transport_flags_from_domain(s, &flags, name, 1);
-		AVAHI_CHECK_VALIDITY(s, (flags & AVAHI_PUBLISH_USE_MULTICAST) || (flags & AVAHI_PUBLISH_USE_LLMNR), AVAHI_ERR_NOT_SUPPORTED);
-
-		return server_add_address_internal(s, g, interface, protocol, flags, name, a, flags & AVAHI_PUBLISH_USE_MULTICAST ? AVAHI_DEFAULT_TTL_HOST_NAME : AVAHI_DEFAULT_LLMNR_TTL_HOST_NAME);
+	    name = n;
 	}
+	
+	/* transport flags */
+	transport_flags_from_domain(s, &flags, name, 1);
+	AVAHI_CHECK_VALIDITY(s, (flags & (AVAHI_PUBLISH_USE_MULTICAST | AVAHI_PUBLISH_USE_LLMNR)), AVAHI_ERR_NOT_SUPPORTED);
+
+	/* No matter mDNS or LLMNR */
+	if (flags & AVAHI_PUBLISH_USE_MULTICAST)
+		ret_fqdn = server_add_address_internal(s, g, interface, protocol, flags, name, a, AVAHI_DEFAULT_TTL_HOST_NAME);
+	else 
+		ret_fqdn = server_add_address_internal( s, g, 
+												interface, 
+												protocol, 
+												(null_name == 1) ? (flags |= AVAHI_PUBLISH_NO_REVERSE) : (flags), 
+												name, a, 
+												AVAHI_DEFAULT_LLMNR_TTL_HOST_NAME);
+	
+	/* If previous entries have been added successfully && name parameter was NULL && we are using LLMNR, 
+	publish hostname -> A/AAAA entry and PTR entry*/
+	if (ret_fqdn == AVAHI_OK && null_name == 1 && flags & AVAHI_PUBLISH_USE_LLMNR )
+		return server_add_address_internal(s, g, interface, protocol, flags & ~ AVAHI_PUBLISH_NO_REVERSE, s->host_name, a, AVAHI_DEFAULT_LLMNR_TTL_HOST_NAME);
+
+	return ret_fqdn;
 }
 
 static AvahiEntry *server_add_txt_strlst_nocopy(

@@ -131,7 +131,6 @@ struct AvahiSEntryGroup {
 		
 		struct {
 			unsigned n_verifying;
-			unsigned n_entries;	
 		}llmnr;
 		
     }proto;

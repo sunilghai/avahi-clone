@@ -66,6 +66,16 @@ static void withdraw_llmnr_entry(AvahiServer *s, AvahiEntry *e) {
 	return;
 }
 
+static void withdraw_rrset(AvahiServer *s, AvahiKey *key) {
+    AvahiEntry *e;
+    
+    assert(s);
+    assert(key);
+   
+    for (e = avahi_hashmap_lookup(s->llmnr.entries_by_key, key); e; e = e->by_key_next)
+        withdraw_llmnr_entry(s, e);
+}
+
 /* This function is called when 'AvahiLLMNRQuery' has been processed completely.
 Based on the data we get in 'userdata', state of the 'AvahiLLMNREntryVerifier' is decided*/
 static void query_callback(
@@ -103,7 +113,7 @@ static void query_callback(
 		/* Set by handle_response function*/
 		/* There is already a conflict about this key or name is not UNIQUE */
 		/* Withdraw this Entry*/
-		withdraw_llmnr_entry(ev->s, ev->e);
+		withdraw_rrset(ev->s, ev->e->record->key);
 
 	} else {
 
@@ -136,7 +146,7 @@ static void query_callback(
 				ev->state = AVAHI_CONFLICT;
 
 				/* withdraw this entry */	
-				withdraw_llmnr_entry(ev->s, ev->e);
+				withdraw_rrset(ev->s, ev->e->record->key);
 
 			} else {
 				/* 'T' bit is set. Now we compare two IP addresses lexicographically*/
@@ -160,7 +170,7 @@ static void query_callback(
 
 					} else {
 						ev->state = AVAHI_CONFLICT;
-						withdraw_llmnr_entry(ev->s, ev->e);
+						withdraw_rrset(ev->s, ev->e->record->key);
 					}
 				}
 		}

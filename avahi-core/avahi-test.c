@@ -375,7 +375,14 @@ int main(AVAHI_GCC_UNUSED int argc, AVAHI_GCC_UNUSED char *argv[]) {
 
     dsb = avahi_s_dns_server_browser_new(server, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, "local", AVAHI_DNS_SERVER_RESOLVE, AVAHI_PROTO_UNSPEC, 0, dsb_callback, NULL);
 
-    avahi_elapse_time(&tv, 1000*5, 0);
+/*	if (avahi_server_add_address(server, group, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, 0, NULL, avahi_address_parse("10.1.147.88", AVAHI_PROTO_INET, &a)) < 0)
+		avahi_log_debug("avahi_server_add_address() failed");
+
+	if (avahi_server_add_address(server, group, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, AVAHI_PUBLISH_USE_LLMNR, NULL, avahi_address_parse("10.1.147.98", AVAHI_PROTO_INET, &a)) < 0)
+		avahi_log_debug("avahi_server_add_address() failed"); */
+
+
+    avahi_elapse_time(&tv, 1000*11, 0);
     poll_api->timeout_new(poll_api, &tv, dump_timeout_callback, server);
 
     avahi_elapse_time(&tv, 1000*60, 0);
