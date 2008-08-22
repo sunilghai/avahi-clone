@@ -152,7 +152,7 @@ static void netlink_callback(AvahiNetlink *nl, struct nlmsghdr *n, void* userdat
          * interface and send out queries for subscribed records on
          * it */
         avahi_hw_interface_check_relevant(hw, AVAHI_MDNS);
-		avahi_hw_interface_check_relevant(hw, AVAHI_LLMNR);
+        avahi_hw_interface_check_relevant(hw, AVAHI_LLMNR);
 
         /* Update any associated RRs of this interface. (i.e. the
          * _workstation._tcp record containing the MAC address) */

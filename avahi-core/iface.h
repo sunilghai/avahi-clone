@@ -108,36 +108,36 @@ struct AvahiInterface {
     AVAHI_LLIST_HEAD(AvahiInterfaceAddress, addresses);
         
     struct {
-	    int announcing;
-	    AvahiAddress local_mcast_address;
-	    int mcast_joined;
+        int announcing;
+        AvahiAddress local_mcast_address;
+        int mcast_joined;
 
-	    AvahiCache *cache;
+        AvahiCache *cache;
 
-	    AvahiQueryScheduler *query_scheduler;
-	    AvahiResponseScheduler * response_scheduler;
-	    AvahiProbeScheduler *probe_scheduler;
+        AvahiQueryScheduler *query_scheduler;
+        AvahiResponseScheduler * response_scheduler;
+        AvahiProbeScheduler *probe_scheduler;
 
-	    AVAHI_LLIST_HEAD(AvahiAnnouncer, announcers);
+        AVAHI_LLIST_HEAD(AvahiAnnouncer, announcers);
 
-	    AvahiHashmap *queriers_by_key;
-	    AVAHI_LLIST_HEAD(AvahiQuerier, queriers);
-	} mdns;
-	
-	struct {
-		int verifying;
-		AvahiAddress local_llmnr_address;
-		int llmnr_joined;
-	
-		AvahiLLMNRQueryScheduler *query_scheduler;
-		AvahiLLMNRResponseScheduler *response_scheduler;
-		
-		AvahiHashmap *queryjobs_by_key;
-	
-		AVAHI_LLIST_HEAD(AvahiLLMNRQueryJob, queryjobs);
-/*		AVAHI_LLIST_HEAD(AvahiEntry, entries);*/
-		AVAHI_LLIST_HEAD(AvahiLLMNREntryVerify, verifiers); 
-	} llmnr;
+        AvahiHashmap *queriers_by_key;
+        AVAHI_LLIST_HEAD(AvahiQuerier, queriers);
+    } mdns;
+    
+    struct {
+        int verifying;
+        AvahiAddress local_llmnr_address;
+        int llmnr_joined;
+    
+        AvahiLLMNRQueryScheduler *query_scheduler;
+        AvahiLLMNRResponseScheduler *response_scheduler;
+        
+        AvahiHashmap *queryjobs_by_key;
+    
+        AVAHI_LLIST_HEAD(AvahiLLMNRQueryJob, queryjobs);
+/*        AVAHI_LLIST_HEAD(AvahiEntry, entries);*/
+        AVAHI_LLIST_HEAD(AvahiLLMNREntryVerify, verifiers); 
+    } llmnr;
 };
 
 struct AvahiInterfaceAddress {
@@ -152,7 +152,7 @@ struct AvahiInterfaceAddress {
     int global_scope;
     
     AvahiSEntryGroup *entry_mdns_group;
-	AvahiSEntryGroup *entry_llmnr_group;
+    AvahiSEntryGroup *entry_llmnr_group;
 };
 
 AvahiInterfaceMonitor *avahi_interface_monitor_new(AvahiServer *server);

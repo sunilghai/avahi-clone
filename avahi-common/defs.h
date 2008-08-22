@@ -289,7 +289,7 @@ typedef enum {
 typedef enum {
     AVAHI_MDNS,
     AVAHI_LLMNR,
-	AVAHI_WIDE_AREA
+    AVAHI_WIDE_AREA
 } AvahiPublishProtocol;
 /** @{ \name Events */
 

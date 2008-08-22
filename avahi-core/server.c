@@ -62,7 +62,7 @@ static void enum_aux_records(AvahiServer *s, AvahiInterface *i, const char *name
         
         for (e = s->mdns.entries; e; e = e->entries_next)
             if (!e->dead &&
-				e->type == AVAHI_ENTRY_MDNS &&
+                e->type == AVAHI_ENTRY_MDNS &&
                 avahi_entry_is_registered(s, e, i) &&
                 e->record->key->clazz == AVAHI_DNS_CLASS_IN &&
                 avahi_domain_equal(name, e->record->key->name))
@@ -107,7 +107,7 @@ void avahi_server_prepare_response(AvahiServer *s, AvahiInterface *i, AvahiEntry
     assert(s);
     assert(i);
     assert(e);
-	assert(e->type == AVAHI_ENTRY_MDNS);
+    assert(e->type == AVAHI_ENTRY_MDNS);
 
     avahi_record_list_push(s->mdns.record_list, e->record, e->flags & AVAHI_PUBLISH_UNIQUE, unicast_response, auxiliary);
 }
@@ -164,17 +164,17 @@ static void withdraw_entry(AvahiServer *s, AvahiEntry *e) {
         return;
     
     if (e->group) {
-		AvahiEntry *k;
-		assert(e->group->type == AVAHI_GROUP_MDNS);
+        AvahiEntry *k;
+        assert(e->group->type == AVAHI_GROUP_MDNS);
         
         for (k = e->group->entries; k; k = k->by_group_next) {
 
-			assert(k->type == AVAHI_ENTRY_MDNS);
+            assert(k->type == AVAHI_ENTRY_MDNS);
             if (!k->dead) {
                 avahi_goodbye_entry(s, k, 0, 1);
                 k->dead = 1;
             }
-		}
+        }
 
         e->group->proto.mdns.n_probing = 0;
 
@@ -255,7 +255,7 @@ static int handle_conflict(AvahiServer *s, AvahiInterface *i, AvahiRecord *recor
     /* Check whether an incoming record conflicts with one of our own */
     
     for (e = avahi_hashmap_lookup(s->mdns.entries_by_key, record->key); e; e = n) {
-		assert(e->type == AVAHI_ENTRY_MDNS);
+        assert(e->type == AVAHI_ENTRY_MDNS);
         n = e->by_key_next;
 
         if (e->dead)
@@ -1106,8 +1106,8 @@ void avahi_server_decrease_host_rr_pending(AvahiServer *s) {
 
     if (--s->n_host_rr_pending == 0) {
         server_set_state(s, AVAHI_SERVER_RUNNING);
-		avahi_log_info("\nAll host RR's have been announced/verified : SERVER RUNNING");
-	}
+        avahi_log_info("\nAll host RR's have been announced/verified : SERVER RUNNING");
+    }
 }
 
 void avahi_host_rr_entry_group_callback(AvahiServer *s, AvahiSEntryGroup *g, AvahiEntryGroupState state, AVAHI_GCC_UNUSED void *userdata) {
@@ -1340,9 +1340,9 @@ static int setup_sockets(AvahiServer *s) {
     s->mdns.fd_legacy_unicast_ipv6 = s->mdns.fd_ipv6 >= 0 && s->config.enable_reflector ? avahi_open_unicast_socket_ipv6() : -1;
     
     s->mdns.watch_ipv4 =
-	s->mdns.watch_ipv6 =
-	s->mdns.watch_legacy_unicast_ipv4 =
-	s->mdns.watch_legacy_unicast_ipv6 = NULL;
+    s->mdns.watch_ipv6 =
+    s->mdns.watch_legacy_unicast_ipv4 =
+    s->mdns.watch_legacy_unicast_ipv6 = NULL;
     
     if (s->mdns.fd_ipv4 >= 0)
         s->mdns.watch_ipv4 = s->poll_api->watch_new(s->poll_api, s->mdns.fd_ipv4, AVAHI_WATCH_IN, mcast_socket_event, s);
@@ -1391,7 +1391,7 @@ AvahiServer *avahi_server_new(const AvahiPoll *poll_api, const AvahiServerConfig
         return NULL;
     }
 
-	if ((e = setup_llmnr_sockets(s)) < 0) {
+    if ((e = setup_llmnr_sockets(s)) < 0) {
         if (error)
             *error = e;
 
@@ -1464,7 +1464,7 @@ AvahiServer *avahi_server_new(const AvahiPoll *poll_api, const AvahiServerConfig
         s->wide_area.wide_area_lookup_engine = NULL;
 
     s->mdns.multicast_lookup_engine = avahi_multicast_lookup_engine_new(s);
-	s->llmnr.llmnr_lookup_engine = avahi_llmnr_lookup_engine_new(s);
+    s->llmnr.llmnr_lookup_engine = avahi_llmnr_lookup_engine_new(s);
     
     s->monitor = avahi_interface_monitor_new(s);
     avahi_interface_monitor_sync(s->monitor);
@@ -1499,17 +1499,17 @@ void avahi_server_free(AvahiServer* s) {
     
     /* Remove all locally rgeistered stuff */
 
-	while (s->mdns.entries)
-		avahi_entry_free(s, s->mdns.entries);
+    while (s->mdns.entries)
+        avahi_entry_free(s, s->mdns.entries);
 
-	while (s->llmnr.entries)
-		avahi_entry_free(s, s->llmnr.entries);
+    while (s->llmnr.entries)
+        avahi_entry_free(s, s->llmnr.entries);
 
     avahi_interface_monitor_free(s->monitor);
     free_slots(s);
 
     avahi_hashmap_free(s->mdns.entries_by_key);
-	avahi_hashmap_free(s->llmnr.entries_by_key);
+    avahi_hashmap_free(s->llmnr.entries_by_key);
 
     avahi_record_list_free(s->mdns.record_list);
     avahi_record_list_free(s->llmnr.record_list);
@@ -1697,13 +1697,13 @@ static AvahiEntry *find_entry(AvahiServer *s, AvahiIfIndex interface, AvahiProto
     assert(key);
 
     for (e = avahi_hashmap_lookup(s->mdns.entries_by_key, key); e; e = e->by_key_next) {
-		assert(e->type == AVAHI_ENTRY_MDNS);
+        assert(e->type == AVAHI_ENTRY_MDNS);
         if ((e->interface == interface || e->interface <= 0 || interface <= 0) &&
             (e->protocol == protocol || e->protocol == AVAHI_PROTO_UNSPEC || protocol == AVAHI_PROTO_UNSPEC) &&
             (!e->group || e->group->state == AVAHI_ENTRY_GROUP_ESTABLISHED || e->group->state == AVAHI_ENTRY_GROUP_REGISTERING))
 
             return e;
-	}
+    }
 
     return NULL;
 }
@@ -1771,13 +1771,13 @@ int avahi_server_is_record_local(AvahiServer *s, AvahiIfIndex interface, AvahiPr
     assert(record);
     
     for (e = avahi_hashmap_lookup(s->mdns.entries_by_key, record->key); e; e = e->by_key_next) {
-		assert(e->type == AVAHI_ENTRY_MDNS);
+        assert(e->type == AVAHI_ENTRY_MDNS);
         if ((e->interface == interface || e->interface <= 0 || interface <= 0) &&
             (e->protocol == protocol || e->protocol == AVAHI_PROTO_UNSPEC || protocol == AVAHI_PROTO_UNSPEC) &&
             (!e->group || e->group->state == AVAHI_ENTRY_GROUP_ESTABLISHED || e->group->state == AVAHI_ENTRY_GROUP_REGISTERING) &&
             avahi_record_equal_no_ttl(record, e->record))
             return 1;
-	}
+    }
 
     return 0;
 }
