@@ -225,7 +225,7 @@ static AvahiEntry *server_add_llmnr_internal(
     AVAHI_CHECK_VALIDITY_RETURN_NULL(s, 
                                     (!g) || 
                                     (g->type == AVAHI_GROUP_UNSET) || 
-                                    (g->type == AVAHI_GROUP_LLMNR, AVAHI_ERR_INVALID_GROUP));
+                                    (g->type == AVAHI_GROUP_LLMNR), AVAHI_ERR_INVALID_GROUP);
 
     /* Flags should be LLMNR flags only */
     AVAHI_CHECK_VALIDITY_RETURN_NULL(s, AVAHI_FLAGS_VALID(
