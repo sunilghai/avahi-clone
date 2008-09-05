@@ -1,3 +1,23 @@
+
+/***
+  Copyright (C) Sunil Kumar Ghai 2008 <sunilkrghai@gmail.com>
+
+  This program is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2 of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+  USA.
+***/
+
 #include <stdlib.h>
 #include <avahi-common/malloc.h>
 #include <avahi-core/log.h>
@@ -5,105 +25,105 @@
 #include "llmnr-response.h"
 
 AvahiLLMNRResponseScheduler *avahi_llmnr_response_scheduler_new(AvahiInterface *i) {
-	AvahiLLMNRResponseScheduler *s;
+    AvahiLLMNRResponseScheduler *s;
 
-	assert(i);
+    assert(i);
 
-	if(!(s = avahi_new(AvahiLLMNRResponseScheduler, 1)))
-		return NULL;
+    if(!(s = avahi_new(AvahiLLMNRResponseScheduler, 1)))
+        return NULL;
 
-	s->interface = i;
-	s->time_event_queue = i->monitor->server->time_event_queue;
+    s->interface = i;
+    s->time_event_queue = i->monitor->server->time_event_queue;
 
-	AVAHI_LLIST_HEAD_INIT(AvahiLLMNRResponseJob, s->jobs);
+    AVAHI_LLIST_HEAD_INIT(AvahiLLMNRResponseJob, s->jobs);
 
-	return s;
+    return s;
 }
 
 static AvahiLLMNRResponseJob *job_new(
-	AvahiLLMNRResponseScheduler *s, 
-	AvahiDnsPacket *p,
-	const AvahiAddress *a,
-	uint16_t port) {
-	AvahiLLMNRResponseJob *rj;
+    AvahiLLMNRResponseScheduler *s,
+    AvahiDnsPacket *p,
+    const AvahiAddress *a,
+    uint16_t port) {
+    AvahiLLMNRResponseJob *rj;
 
-	assert(a->proto == s->interface->protocol);
+    assert(a->proto == s->interface->protocol);
 
-	if (!(rj = avahi_new(AvahiLLMNRResponseJob, 1)))
-		return NULL;
+    if (!(rj = avahi_new(AvahiLLMNRResponseJob, 1)))
+        return NULL;
 
-	rj->s = s;
-	rj->reply = p;
-	rj->address = *a;
-	rj->port = port;
-	rj->time_event = NULL;
+    rj->s = s;
+    rj->reply = p;
+    rj->address = *a;
+    rj->port = port;
+    rj->time_event = NULL;
 
-	AVAHI_LLIST_PREPEND(AvahiLLMNRResponseJob, jobs, s->jobs , rj);
+    AVAHI_LLIST_PREPEND(AvahiLLMNRResponseJob, jobs, s->jobs , rj);
 
-	return rj;
+    return rj;
 }
 
 void avahi_llmnr_response_job_free(AvahiLLMNRResponseScheduler *s, AvahiLLMNRResponseJob *rj) {
-	assert(s);
-	assert(rj);
+    assert(s);
+    assert(rj);
 
-	if (rj->time_event)
-		avahi_time_event_free(rj->time_event);
+    if (rj->time_event)
+        avahi_time_event_free(rj->time_event);
 
-	if(rj->reply)
-		avahi_dns_packet_free(rj->reply);
+    if(rj->reply)
+        avahi_dns_packet_free(rj->reply);
 
-	AVAHI_LLIST_REMOVE(AvahiLLMNRResponseJob, jobs, s->jobs, rj);
-	
-	avahi_free(rj);
+    AVAHI_LLIST_REMOVE(AvahiLLMNRResponseJob, jobs, s->jobs, rj);
+
+    avahi_free(rj);
 }
 
 
 void avahi_llmnr_response_scheduler_clear(AvahiLLMNRResponseScheduler *s) {
-	assert(s);
+    assert(s);
 
-	while (s->jobs)
-		avahi_llmnr_response_job_free(s, s->jobs);
+    while (s->jobs)
+        avahi_llmnr_response_job_free(s, s->jobs);
 }
 
 void avahi_llmnr_response_scheduler_free(AvahiLLMNRResponseScheduler *s) {
-	assert(s);
+    assert(s);
 
-	avahi_llmnr_response_scheduler_clear(s);
-	avahi_free(s);
+    avahi_llmnr_response_scheduler_clear(s);
+    avahi_free(s);
 }
 
 static void elapse_response_callback(AVAHI_GCC_UNUSED AvahiTimeEvent *e, void *userdata) {
-	AvahiLLMNRResponseJob *rj = userdata;
+    AvahiLLMNRResponseJob *rj = userdata;
 
-	assert(rj);
+    assert(rj);
 
-	/* Send Packet */
-	avahi_interface_send_packet_unicast(rj->s->interface, rj->reply, &rj->address, rj->port, AVAHI_LLMNR);
-	avahi_llmnr_response_job_free(rj->s, rj);
+    /* Send Packet */
+    avahi_interface_send_packet_unicast(rj->s->interface, rj->reply, &rj->address, rj->port, AVAHI_LLMNR);
+    avahi_llmnr_response_job_free(rj->s, rj);
 }
 
 int avahi_post_llmnr_response(AvahiLLMNRResponseScheduler *s, AvahiDnsPacket *p, const AvahiAddress *a, uint16_t port) {
-	AvahiLLMNRResponseJob *rj;
-	struct timeval tv;
+    AvahiLLMNRResponseJob *rj;
+    struct timeval tv;
 
-	assert(s);
-	assert(p);
-	assert(a);
-	assert(port);
+    assert(s);
+    assert(p);
+    assert(a);
+    assert(port);
 
-	assert(a->proto == s->interface->protocol);
-	
-	if (!s->interface->llmnr.verifying)
-		return 0;
+    assert(a->proto == s->interface->protocol);
 
-	if (!(rj = job_new(s, p, a, port)))
-		return 0;
+    if (!s->interface->llmnr.verifying)
+        return 0;
 
-	avahi_elapse_time(&tv, 0, AVAHI_LLMNR_JITTER);
-	rj->time_event = avahi_time_event_new(s->time_event_queue, &tv, elapse_response_callback, rj);
+    if (!(rj = job_new(s, p, a, port)))
+        return 0;
 
-	return 1;
+    avahi_elapse_time(&tv, 0, AVAHI_LLMNR_JITTER);
+    rj->time_event = avahi_time_event_new(s->time_event_queue, &tv, elapse_response_callback, rj);
+
+    return 1;
 }
 
 

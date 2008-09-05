@@ -44,7 +44,7 @@ struct StaticHost {
 
     char *host;
     AvahiAddress address;
-	int publish_proto;	/*0/mDNS/LLMNR*/
+    int publish_proto;    /*0/mDNS/LLMNR*/
 
     AVAHI_LLIST_FIELDS(StaticHost, hosts);
 };
@@ -76,7 +76,7 @@ static void entry_group_callback(AvahiServer *s, AVAHI_GCC_UNUSED AvahiSEntryGro
         case AVAHI_ENTRY_GROUP_FAILURE:
             avahi_log_notice ("Failed to establish static host name \"%s\": %s.", h->host, avahi_strerror (avahi_server_errno (s)));
             break;
-        
+
         case AVAHI_ENTRY_GROUP_UNCOMMITED:
         case AVAHI_ENTRY_GROUP_REGISTERING:
             ;
@@ -85,7 +85,7 @@ static void entry_group_callback(AvahiServer *s, AVAHI_GCC_UNUSED AvahiSEntryGro
 
 static StaticHost *static_host_new(void) {
     StaticHost *s;
-    
+
     s = avahi_new(StaticHost, 1);
 
     s->group = NULL;
@@ -106,7 +106,7 @@ static void static_host_free(StaticHost *s) {
         avahi_s_entry_group_free (s->group);
 
     avahi_free(s->host);
-    
+
     avahi_free(s);
 }
 
@@ -115,10 +115,10 @@ static StaticHost *static_host_find(const char *host, const AvahiAddress *a, int
 
     assert(host);
     assert(a);
-    
+
     for (h = hosts; h; h = h->hosts_next)
         if (!strcmp(h->host, host) && !avahi_address_cmp(a, &h->address) &&
-			(h->publish_proto == 0 || h->publish_proto == publish_proto))
+            (h->publish_proto == 0 || h->publish_proto == publish_proto))
             return h;
 
     return NULL;
@@ -138,7 +138,7 @@ static void add_static_host_to_server(StaticHost *h)
         int err;
         const AvahiServerConfig *config;
         config = avahi_server_get_config(avahi_server);
-        
+
         p = (h->address.proto == AVAHI_PROTO_INET && config->publish_a_on_ipv6) ||
             (h->address.proto == AVAHI_PROTO_INET6 && config->publish_aaaa_on_ipv4) ? AVAHI_PROTO_UNSPEC : h->address.proto;
 
@@ -158,21 +158,21 @@ static void remove_static_host_from_server(StaticHost *h)
 }
 
 static int avahi_proto_to_value(char *publish_proto, int *value) {
-	assert(publish_proto);
+    assert(publish_proto);
 
-	if (!strcmp(publish_proto, "mDNS"))
-		*value = AVAHI_PUBLISH_USE_MULTICAST;
+    if (!strcmp(publish_proto, "mDNS"))
+        *value = AVAHI_PUBLISH_USE_MULTICAST;
 
-	else if (!strcmp(publish_proto, "LLMNR"))
-		*value = AVAHI_PUBLISH_USE_LLMNR;
+    else if (!strcmp(publish_proto, "LLMNR"))
+        *value = AVAHI_PUBLISH_USE_LLMNR;
 
-	else if (!strcmp(publish_proto, "UNSPEC"))
-		*value = 0;
+    else if (!strcmp(publish_proto, "UNSPEC"))
+        *value = 0;
 
-	else 
-		return 0;
+    else
+        return 0;
 
-	return 1;
+    return 1;
 }
 
 void static_hosts_add_to_server(void) {
@@ -202,13 +202,13 @@ void static_hosts_load(int in_chroot) {
     }
 
     current_iteration++;
-    
+
     while (!feof(f)) {
         unsigned int len;
         char ln[256], *s;
         char *host, *ip, *publish_proto;
         AvahiAddress a;
-		int publish_proto_value;
+        int publish_proto_value;
 
         if (!fgets(ln, sizeof (ln), f))
             break;
@@ -255,7 +255,7 @@ void static_hosts_load(int in_chroot) {
         if (*publish_proto == 0)
         {
             avahi_log_error("%s:%d: Error, unexpected end of line!", filename, line);
-			avahi_free(publish_proto);
+            avahi_free(publish_proto);
             avahi_free(host);
             avahi_free(ip);
             goto fail;
@@ -266,7 +266,7 @@ void static_hosts_load(int in_chroot) {
 
         /* Skip past any more spaces */
         s += strspn(s, " \t");
-        
+
         /* Anything left? */
         if (*s != 0) {
             avahi_log_error ("%s:%d: Junk on the end of the line!", filename, line);
@@ -277,21 +277,21 @@ void static_hosts_load(int in_chroot) {
 
         if (!avahi_address_parse(ip, AVAHI_PROTO_UNSPEC, &a)) {
             avahi_log_error("Static host name %s: failed to parse address %s", host, ip);
-			avahi_free(publish_proto);
+            avahi_free(publish_proto);
             avahi_free(host);
             avahi_free(ip);
             goto fail;
         }
         avahi_free(ip);
 
-		if(!avahi_proto_to_value(publish_proto, &publish_proto_value)) {
+        if(!avahi_proto_to_value(publish_proto, &publish_proto_value)) {
             avahi_log_error("Static host name %s: failed to parse publish protocol %s", host, ip);
-			avahi_free(publish_proto);
+            avahi_free(publish_proto);
             avahi_free(host);
             avahi_free(ip);
             goto fail;
-		}
-		avahi_free(publish_proto);
+        }
+        avahi_free(publish_proto);
 
         if ((h = static_host_find(host, &a, publish_proto_value)))
             avahi_free(host);
@@ -299,7 +299,7 @@ void static_hosts_load(int in_chroot) {
             h = static_host_new();
             h->host = host;
             h->address = a;
-			h->publish_proto = publish_proto_value;
+            h->publish_proto = publish_proto_value;
             avahi_log_info("Loading new static hostname %s.", h->host);
         }
 
@@ -308,7 +308,7 @@ void static_hosts_load(int in_chroot) {
 
     for (h = hosts; h; h = next) {
         next = h->hosts_next;
-        
+
         if (h->iteration != current_iteration) {
             avahi_log_info("Static hostname %s vanished, removing.", h->host);
             static_host_free(h);
@@ -316,7 +316,7 @@ void static_hosts_load(int in_chroot) {
     }
 
 fail:
-    
+
     fclose(f);
 }
 

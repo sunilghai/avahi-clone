@@ -55,9 +55,9 @@ typedef struct AvahiHwInterface AvahiHwInterface;
 typedef struct AvahiInterfaceMonitorOSDep AvahiInterfaceMonitorOSDep;
 
 struct AvahiInterfaceMonitorOSDep {
-        
+
     unsigned query_addr_seq, query_link_seq;
-    
+
     enum {
         LIST_IFACE,
         LIST_ADDR,
@@ -87,7 +87,7 @@ struct AvahiHwInterface {
     char *name;
     AvahiIfIndex index;
     int flags_ok;
-    
+
     unsigned mtu;
 
     uint8_t mac_address[AVAHI_MAC_ADDRESS_MAX];
@@ -103,10 +103,10 @@ struct AvahiInterface {
     AvahiHwInterface *hardware;
     AVAHI_LLIST_FIELDS(AvahiInterface, interface);
     AVAHI_LLIST_FIELDS(AvahiInterface, by_hardware);
-    
+
     AvahiProtocol protocol;
     AVAHI_LLIST_HEAD(AvahiInterfaceAddress, addresses);
-        
+
     struct {
         int announcing;
         AvahiAddress local_mcast_address;
@@ -123,20 +123,20 @@ struct AvahiInterface {
         AvahiHashmap *queriers_by_key;
         AVAHI_LLIST_HEAD(AvahiQuerier, queriers);
     } mdns;
-    
+
     struct {
         int verifying;
         AvahiAddress local_llmnr_address;
         int llmnr_joined;
-    
+
         AvahiLLMNRQueryScheduler *query_scheduler;
         AvahiLLMNRResponseScheduler *response_scheduler;
-        
+
         AvahiHashmap *queryjobs_by_key;
-    
+
         AVAHI_LLIST_HEAD(AvahiLLMNRQueryJob, queryjobs);
 /*        AVAHI_LLIST_HEAD(AvahiEntry, entries);*/
-        AVAHI_LLIST_HEAD(AvahiLLMNREntryVerify, verifiers); 
+        AVAHI_LLIST_HEAD(AvahiLLMNREntryVerify, verifiers);
     } llmnr;
 };
 
@@ -150,7 +150,7 @@ struct AvahiInterfaceAddress {
     unsigned prefix_len;
 
     int global_scope;
-    
+
     AvahiSEntryGroup *entry_mdns_group;
     AvahiSEntryGroup *entry_llmnr_group;
 };

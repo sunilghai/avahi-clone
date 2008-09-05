@@ -17,7 +17,7 @@
   License along with avahi; if not, write to the Free Software
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
   USA.
- ***/
+***/
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -88,7 +88,7 @@ const char *avahi_strerror(int error) {
         N_("Invalid argument"),
         N_("Is empty"),
         N_("The requested operation is invalid because redundant"),
-	N_("New entry is requested to be published with invalid group")
+        N_("New entry is requested to be published with invalid group")
     };
 
     avahi_init_i18n();

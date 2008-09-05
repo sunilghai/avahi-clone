@@ -29,7 +29,7 @@
 AVAHI_C_DECL_BEGIN
 
 /** Error codes used by avahi */
-enum { 
+enum {
     AVAHI_OK = 0,                            /**< OK */
     AVAHI_ERR_FAILURE = -1,                  /**< Generic error code */
     AVAHI_ERR_BAD_STATE = -2,                /**< Object was in a bad state */
@@ -79,18 +79,18 @@ enum {
     AVAHI_ERR_DNS_YXRRSET = -42,
     AVAHI_ERR_DNS_NXRRSET = -43,
     AVAHI_ERR_DNS_NOTAUTH = -44,             /**< DNS Error: Not authorized */
-    AVAHI_ERR_DNS_NOTZONE = -45,             
+    AVAHI_ERR_DNS_NOTZONE = -45,
     AVAHI_ERR_INVALID_RDATA = -46,           /**< Invalid RDATA */
     AVAHI_ERR_INVALID_DNS_CLASS = -47,       /**< Invalid DNS class */
     AVAHI_ERR_INVALID_DNS_TYPE = -48,        /**< Invalid DNS type */
     AVAHI_ERR_NOT_SUPPORTED = -49,           /**< Not supported */
-    
+
     AVAHI_ERR_NOT_PERMITTED = -50,           /**< Operation not permitted */
     AVAHI_ERR_INVALID_ARGUMENT = -51,        /**< Invalid argument */
     AVAHI_ERR_IS_EMPTY = -52,                /**< Is empty */
     AVAHI_ERR_NO_CHANGE = -53,               /**< The requested operation is invalid because it is redundant */
-    AVAHI_ERR_INVALID_GROUP = -54,	     /**< New entry is requested to be published with invalid group */
-    
+    AVAHI_ERR_INVALID_GROUP = -54,           /**< New entry is requested to be published with invalid group */
+
     /****
      ****    IF YOU ADD A NEW ERROR CODE HERE, PLEASE DON'T FORGET TO ADD
      ****    IT TO THE STRING ARRAY IN avahi_strerror() IN error.c AND
@@ -98,7 +98,7 @@ enum {
      ****
      ****    Also remember to update the MAX value below.
      ****/
-    
+
     AVAHI_ERR_MAX = -55
 };
 

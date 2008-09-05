@@ -1,3 +1,23 @@
+
+/***
+  Copyright (C) Sunil Kumar Ghai 2008 <sunilkrghai@gmail.com>
+
+  This program is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2 of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+  USA.
+***/
+
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -13,185 +33,185 @@
 #include "llmnr-lookup.h"
 
 static AvahiLLMNRQuery* find_query(AvahiLLMNRLookupEngine *e, uint16_t id) {
-	AvahiLLMNRQuery *lq;
-	/* Convert to 32 bit integer*/
-	uint32_t i = (uint32_t) id;
+    AvahiLLMNRQuery *lq;
+    /* Convert to 32 bit integer*/
+    uint32_t i = (uint32_t) id;
 
-	assert(e);
-	
-	if(!(lq = avahi_hashmap_lookup(e->queries_by_id, &i)))
-		return NULL;
+    assert(e);
 
-	assert(lq->id == id);
+    if(!(lq = avahi_hashmap_lookup(e->queries_by_id, &i)))
+        return NULL;
 
-	if(lq->dead)
-		return NULL;
+    assert(lq->id == id);
 
-	return lq;
+    if(lq->dead)
+        return NULL;
+
+    return lq;
 }
 
 AvahiLLMNRQuery* avahi_llmnr_query_add(AvahiInterface *i, AvahiKey *key, AvahiLLMNRQueryType type, AvahiLLMNRQueryCallback callback, void *userdata) {
-	AvahiLLMNRQuery *lq;
-	int c;
+    AvahiLLMNRQuery *lq;
+    int c;
 
-	/* Engine maintains a hashmap of 'AvahiLLMNRQuery' objects by id */
-	AvahiLLMNRLookupEngine *e = i->monitor->server->llmnr.llmnr_lookup_engine;
-	
-	assert(i);	
-	assert(key);
-	assert(callback);
+    /* Engine maintains a hashmap of 'AvahiLLMNRQuery' objects by id */
+    AvahiLLMNRLookupEngine *e = i->monitor->server->llmnr.llmnr_lookup_engine;
 
-	if(!(lq = avahi_new(AvahiLLMNRQuery, 1)))
-		return NULL;
+    assert(i);
+    assert(key);
+    assert(callback);
 
-	/* Initialize parameters */
-	lq->dead = 0;
-	lq->key = avahi_key_ref(key);
-	lq->type = type;
-	lq->interface = i;
-	lq->callback = callback;
-	lq->post_id_valid = 0;
-	lq->post_id = 0;
-	lq->userdata = userdata;
+    if(!(lq = avahi_new(AvahiLLMNRQuery, 1)))
+        return NULL;
 
-	/* Initialize record lists for this query object */
-	lq->c_bit_set = avahi_record_list_new();
-	lq->c_bit_clear = avahi_record_list_new();
+    /* Initialize parameters */
+    lq->dead = 0;
+    lq->key = avahi_key_ref(key);
+    lq->type = type;
+    lq->interface = i;
+    lq->callback = callback;
+    lq->post_id_valid = 0;
+    lq->post_id = 0;
+    lq->userdata = userdata;
 
-	c = avahi_record_list_is_empty(lq->c_bit_set);
-	assert(c);
-	assert(lq->c_bit_clear);
-	
-	/* Set ID */
-	/* KEEP IT 32 BIT for HASHMAP */
-	for (;; e->next_id++)
-		if(!(find_query(e, e->next_id)))
-			break;
+    /* Initialize record lists for this query object */
+    lq->c_bit_set = avahi_record_list_new();
+    lq->c_bit_clear = avahi_record_list_new();
 
-	lq->id = e->next_id++;
-	
-	/* AvahiLLMNRLookupEngine hashmap of queries by ID, 
-	'engine-AvahiLLMNRQuery'. (lq->id and lq) */
-	avahi_hashmap_insert(e->queries_by_id, &(lq->id), lq);
+    c = avahi_record_list_is_empty(lq->c_bit_set);
+    assert(c);
+    assert(lq->c_bit_clear);
 
-	/* Schedule this LLMNR query. This will create an 
-	'AvahiLLMNRQueryJob' for this query and will issue
-	further queries there only. im0 */
-	if(!avahi_interface_post_llmnr_query(i, lq, 0)) 
-		return NULL;
+    /* Set ID */
+    /* KEEP IT 32 BIT for HASHMAP */
+    for (;; e->next_id++)
+        if(!(find_query(e, e->next_id)))
+            break;
 
-	return lq;
-	
+    lq->id = e->next_id++;
+
+    /* AvahiLLMNRLookupEngine hashmap of queries by ID,
+    'engine-AvahiLLMNRQuery'. (lq->id and lq) */
+    avahi_hashmap_insert(e->queries_by_id, &(lq->id), lq);
+
+    /* Schedule this LLMNR query. This will create an
+    'AvahiLLMNRQueryJob' for this query and will issue
+    further queries there only. im0 */
+    if(!avahi_interface_post_llmnr_query(i, lq, 0))
+        return NULL;
+
+    return lq;
+
 }
 
 void avahi_llmnr_query_destroy(AvahiLLMNRQuery *lq) {
-	AvahiLLMNRLookupEngine *e;
-	e = lq->interface->monitor->server->llmnr.llmnr_lookup_engine;
-	
-	assert(lq);
+    AvahiLLMNRLookupEngine *e;
+    e = lq->interface->monitor->server->llmnr.llmnr_lookup_engine;
 
-	avahi_hashmap_remove(e->queries_by_id, &(lq->id));
-	
-	avahi_key_unref(lq->key);
-	avahi_free(lq);
-	
-	return;
+    assert(lq);
+
+    avahi_hashmap_remove(e->queries_by_id, &(lq->id));
+
+    avahi_key_unref(lq->key);
+    avahi_free(lq);
+
+    return;
 }
 
 void avahi_llmnr_query_remove(AvahiInterface *i, AvahiKey *key) {
-	/* First find for the AvahiLLMNRQueryJob object for this 'i' and 'key' */
-	AvahiLLMNRQueryJob *qj;
+    /* First find for the AvahiLLMNRQueryJob object for this 'i' and 'key' */
+    AvahiLLMNRQueryJob *qj;
 
-	assert(i);
-	assert(key);
+    assert(i);
+    assert(key);
 
-	/* Interface is maintaing hashmap of AvahiLLMNRQueryJob's by key*/
-	if(!(qj = avahi_hashmap_lookup(i->llmnr.queryjobs_by_key, key)))
-		return;
-	
-	/* get 'qj' -> destroy(s, qj) -> destroy(lq) */
-	avahi_llmnr_query_job_destroy(qj->scheduler, qj);
-	return;
+    /* Interface is maintaing hashmap of AvahiLLMNRQueryJob's by key*/
+    if(!(qj = avahi_hashmap_lookup(i->llmnr.queryjobs_by_key, key)))
+        return;
+
+    /* get 'qj' -> destroy(s, qj) -> destroy(lq) */
+    avahi_llmnr_query_job_destroy(qj->scheduler, qj);
+    return;
 }
 
 struct cbdata {
-	AvahiLLMNRQueryCallback callback;
-	AvahiKey *key;
-	void *userdata;
+    AvahiLLMNRQueryCallback callback;
+    AvahiKey *key;
+    void *userdata;
 };
 
 static void llmnr_query_add_callback(AvahiInterfaceMonitor *m, AvahiInterface *i, void *userdata) {
-	struct cbdata *cbdata;
-	
-	assert(m);
-	assert(i);
-	assert(userdata);
+    struct cbdata *cbdata;
 
-	cbdata = (struct cbdata *)(userdata);
+    assert(m);
+    assert(i);
+    assert(userdata);
 
-	/* Issue AVAHI_LLMNR_SIMPLE_QUERY type Query*/
-	if(!avahi_llmnr_query_add( i, (AvahiKey*)(cbdata->key), AVAHI_LLMNR_SIMPLE_QUERY, cbdata->callback, cbdata->userdata))
-		/* set errno*/	
+    cbdata = (struct cbdata *)(userdata);
 
-	return;
+    /* Issue AVAHI_LLMNR_SIMPLE_QUERY type Query*/
+    if(!avahi_llmnr_query_add( i, (AvahiKey*)(cbdata->key), AVAHI_LLMNR_SIMPLE_QUERY, cbdata->callback, cbdata->userdata))
+        /* set errno*/
+
+    return;
 }
 
 
 void avahi_llmnr_query_add_for_all(
-		AvahiServer *s, 
-		AvahiIfIndex idx, 
-		AvahiProtocol protocol, 
-		AvahiKey *key, 
-		AvahiLLMNRQueryCallback callback, 
-		void *userdata) {
+        AvahiServer *s,
+        AvahiIfIndex idx,
+        AvahiProtocol protocol,
+        AvahiKey *key,
+        AvahiLLMNRQueryCallback callback,
+        void *userdata) {
 
-		struct cbdata cbdata;
+        struct cbdata cbdata;
 
-			assert(s);
-			assert(callback);
-			assert(AVAHI_IF_VALID(idx));
-			assert(AVAHI_PROTO_VALID(protocol));
-			assert(key);
-	
-			cbdata.callback = callback;
-			cbdata.key = key;
-			cbdata.userdata = userdata;
-	
-			avahi_interface_monitor_walk(s->monitor, idx, protocol, llmnr_query_add_callback, &cbdata);
+            assert(s);
+            assert(callback);
+            assert(AVAHI_IF_VALID(idx));
+            assert(AVAHI_PROTO_VALID(protocol));
+            assert(key);
+
+            cbdata.callback = callback;
+            cbdata.key = key;
+            cbdata.userdata = userdata;
+
+            avahi_interface_monitor_walk(s->monitor, idx, protocol, llmnr_query_add_callback, &cbdata);
 
 }
 
 void avahi_llmnr_query_free(AvahiLLMNRQuery *lq) {
-	assert(lq);
+    assert(lq);
 
-	avahi_llmnr_query_scheduler_withdraw_by_id(lq->interface->llmnr.query_scheduler, lq->post_id);
+    avahi_llmnr_query_scheduler_withdraw_by_id(lq->interface->llmnr.query_scheduler, lq->post_id);
 }
 
 static void remove_llmnr_query_callback(AvahiInterfaceMonitor *m, AvahiInterface *i, void *userdata) {
 
-	assert(m);
-	assert(i);
-	assert(userdata);
+    assert(m);
+    assert(i);
+    assert(userdata);
 
-	/* Remove Query */
-	avahi_llmnr_query_remove(i, (AvahiKey*) userdata);
+    /* Remove Query */
+    avahi_llmnr_query_remove(i, (AvahiKey*) userdata);
 }
 
 void avahi_llmnr_query_remove_for_all(AvahiServer *s, AvahiIfIndex idx, AvahiProtocol protocol, AvahiKey *key) {
 
-	assert(s);
-	assert(AVAHI_IF_VALID(idx));
-	assert(AVAHI_PROTO_VALID(protocol));
-	assert(key);
-	
-	avahi_interface_monitor_walk(s->monitor, idx, protocol, remove_llmnr_query_callback, key);
+    assert(s);
+    assert(AVAHI_IF_VALID(idx));
+    assert(AVAHI_PROTO_VALID(protocol));
+    assert(key);
+
+    avahi_interface_monitor_walk(s->monitor, idx, protocol, remove_llmnr_query_callback, key);
 }
 
 void avahi_llmnr_queries_free(AvahiInterface *i) {
-	AvahiLLMNRQueryJob *qj;
-	assert(i);
-	
-	for(qj = i->llmnr.queryjobs; qj; qj = qj->jobs_by_interface_next)
-		avahi_llmnr_query_job_destroy(qj->scheduler, qj);
-		
+    AvahiLLMNRQueryJob *qj;
+    assert(i);
+
+    for(qj = i->llmnr.queryjobs; qj; qj = qj->jobs_by_interface_next)
+        avahi_llmnr_query_job_destroy(qj->scheduler, qj);
+
 }

@@ -91,7 +91,7 @@ libavahi_core_la_SOURCES = \
 	verify.c verify.h \
 	llmnr-lookup.c llmnr-lookup.h \
 	llmnr-response.c llmnr-response.h \
-	llmnr-server.c 
+	llmnr-server.c
 
 if HAVE_NETLINK
 libavahi_core_la_SOURCES += \

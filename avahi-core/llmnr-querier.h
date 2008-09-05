@@ -1,5 +1,24 @@
 #ifndef foollmnrquerierbar
-#define foollmnrquerierbar  
+#define foollmnrquerierbar
+
+/***
+  Copyright (C) Sunil Kumar Ghai 2008 <sunilkrghai@gmail.com>
+
+  This program is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2 of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+  USA.
+***/
 
 typedef struct AvahiLLMNRQuery AvahiLLMNRQuery;
 
@@ -18,33 +37,33 @@ typedef void (*AvahiLLMNRQueryCallback)(
     AvahiProtocol protocol,
     AvahiRecord *r,
     void *userdata);
-    
+
 typedef enum {
-	AVAHI_LLMNR_SIMPLE_QUERY,
-	AVAHI_LLMNR_CONFLICT_QUERY,
-	AVAHI_LLMNR_UNIQUENESS_VERIFICATION_QUERY
+    AVAHI_LLMNR_SIMPLE_QUERY,
+    AVAHI_LLMNR_CONFLICT_QUERY,
+    AVAHI_LLMNR_UNIQUENESS_VERIFICATION_QUERY
 } AvahiLLMNRQueryType;
 
 
 struct AvahiLLMNRQuery{
-	int dead;
+    int dead;
 
-	/* 'e = interface->monitor->server->llmnr->llmnr_lookup_engine' 
-	maintains the hashmap for all queries by id. */
-	uint32_t id;
+    /* 'e = interface->monitor->server->llmnr->llmnr_lookup_engine'
+    maintains the hashmap for all queries by id. */
+    uint32_t id;
 
-	AvahiKey *key;
-	AvahiInterface *interface;
-	AvahiLLMNRQueryCallback callback;
-	AvahiLLMNRQueryType type;
+    AvahiKey *key;
+    AvahiInterface *interface;
+    AvahiLLMNRQueryCallback callback;
+    AvahiLLMNRQueryType type;
 
-	AvahiRecordList *c_bit_set, *c_bit_clear;
+    AvahiRecordList *c_bit_set, *c_bit_clear;
 
-	/* 'AvahiLLMNRQueryScheduler' next_id */
-	unsigned post_id;
-	int post_id_valid;
+    /* 'AvahiLLMNRQueryScheduler' next_id */
+    unsigned post_id;
+    int post_id_valid;
 
-	void *userdata;
+    void *userdata;
 };
 
 /* Issue an LLMNR Query on the specified interface and key*/
@@ -53,8 +72,8 @@ AvahiLLMNRQuery* avahi_llmnr_query_add(AvahiInterface *i, AvahiKey *key, AvahiLL
 /* Remove a scheduled LLMNR query for the specified key and interface*/
 void avahi_llmnr_query_remove(AvahiInterface *i, AvahiKey *key);
 
-/* Issue LLMNR queries for the specied key on all interfaces that match 
-idx and protocol. In this case callback function will be 'callback' for 
+/* Issue LLMNR queries for the specied key on all interfaces that match
+idx and protocol. In this case callback function will be 'callback' for
 all those queries. and it issues AVAHI_LLMNR_SIMPLE_QUERY type of query*/
 void avahi_llmnr_query_add_for_all(AvahiServer *s, AvahiIfIndex idx, AvahiProtocol protocol, AvahiKey *key, AvahiLLMNRQueryCallback callback, void *userdata);
 

@@ -41,7 +41,7 @@ static const char * const table[- AVAHI_ERR_MAX] = {
     AVAHI_DBUS_ERR_IS_PATTERN,
     AVAHI_DBUS_ERR_COLLISION,
     AVAHI_DBUS_ERR_INVALID_RECORD,
-    
+
     AVAHI_DBUS_ERR_INVALID_SERVICE_NAME,
     AVAHI_DBUS_ERR_INVALID_SERVICE_TYPE,
     AVAHI_DBUS_ERR_INVALID_PORT,
@@ -52,7 +52,7 @@ static const char * const table[- AVAHI_ERR_MAX] = {
     AVAHI_DBUS_ERR_TOO_MANY_OBJECTS,
     AVAHI_DBUS_ERR_TOO_MANY_ENTRIES,
     AVAHI_DBUS_ERR_OS,
-    
+
     AVAHI_DBUS_ERR_ACCESS_DENIED,
     AVAHI_DBUS_ERR_INVALID_OPERATION,
     AVAHI_DBUS_ERR_DBUS_ERROR,
@@ -63,7 +63,7 @@ static const char * const table[- AVAHI_ERR_MAX] = {
     AVAHI_DBUS_ERR_INVALID_INTERFACE,
     AVAHI_DBUS_ERR_INVALID_PROTOCOL,
     AVAHI_DBUS_ERR_INVALID_FLAGS,
-    
+
     AVAHI_DBUS_ERR_NOT_FOUND,
     AVAHI_DBUS_ERR_INVALID_CONFIG,
     AVAHI_DBUS_ERR_VERSION_MISMATCH,
@@ -74,7 +74,7 @@ static const char * const table[- AVAHI_ERR_MAX] = {
     AVAHI_DBUS_ERR_DNS_SERVFAIL,
     AVAHI_DBUS_ERR_DNS_NXDOMAIN,
     AVAHI_DBUS_ERR_DNS_NOTIMP,
-    
+
     AVAHI_DBUS_ERR_DNS_REFUSED,
     AVAHI_DBUS_ERR_DNS_YXDOMAIN,
     AVAHI_DBUS_ERR_DNS_YXRRSET,
@@ -129,7 +129,7 @@ int avahi_error_dbus_to_number(const char *s) {
     for (m = error_map; m->dbus_error; m++)
         if (strcmp(m->dbus_error, s) == 0)
             return m->avahi_error;
-    
+
     return AVAHI_ERR_DBUS_ERROR;
 }
 

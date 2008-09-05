@@ -2,17 +2,17 @@
 
 /***
   This file is part of avahi.
-
+ 
   avahi is free software; you can redistribute it and/or modify it
   under the terms of the GNU Lesser General Public License as
   published by the Free Software Foundation; either version 2.1 of the
   License, or (at your option) any later version.
-
+ 
   avahi is distributed in the hope that it will be useful, but WITHOUT
   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
   or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General
   Public License for more details.
-
+ 
   You should have received a copy of the GNU Lesser General Public
   License along with avahi; if not, write to the Free Software
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -121,8 +121,8 @@ int avahi_mcast_join_ipv4(int fd, const AvahiIPv4Address *a, int idx, int join, 
     memset(&mreq, 0, sizeof(mreq));
 #ifdef HAVE_STRUCT_IP_MREQN
 /*
-	imr_ifindex and imr_address will remain same 
-	for both of the multicsat groups.
+    imr_ifindex and imr_address will remain same
+    for both of the multicsat groups.
 */
     mreq.imr_ifindex = idx;
     mreq.imr_address.s_addr = a->address;
@@ -130,8 +130,8 @@ int avahi_mcast_join_ipv4(int fd, const AvahiIPv4Address *a, int idx, int join, 
     mreq.imr_interface.s_addr = a->address;
 #endif
 /*
-	send proto for 'sa' to joing appropiate 
-	multicast group.
+    send proto for 'sa' to joing appropiate
+    multicast group.
 */
     mcast_group_ipv4(&sa, proto);
     mreq.imr_multiaddr = sa.sin_addr;
@@ -160,8 +160,8 @@ int avahi_mcast_join_ipv6(int fd, const AvahiIPv6Address *a, int idx, int join, 
 
     memset(&mreq6, 0, sizeof(mreq6));
 /*
-	send proto for 'sa6' to join appropiate
-	multicast group
+    send proto for 'sa6' to join appropiate
+    multicast group
 */
     mcast_group_ipv6 (&sa6, proto);
     mreq6.ipv6mr_multiaddr = sa6.sin6_addr;
@@ -331,7 +331,7 @@ int avahi_open_socket_ipv4(int no_reuse,AvahiPublishProtocol proto) {
         goto fail;
     }
 
-	ttl = 255;
+    ttl = 255;
     if (setsockopt(fd, IPPROTO_IP, IP_MULTICAST_TTL, &ttl, sizeof(ttl)) < 0) {
         avahi_log_warn("IP_MULTICAST_TTL failed: %s", strerror(errno));
         goto fail;
@@ -352,11 +352,11 @@ int avahi_open_socket_ipv4(int no_reuse,AvahiPublishProtocol proto) {
     memset(&local, 0, sizeof(local));
     local.sin_family = AF_INET;
 /*
-	Here we define only port of local structure because this 
-	socket is used by AvahiServer and is used to join multicast 
-	group. we pick the address further from local interface
-	and joing the group.(ip_mreqn)
-	avahi_mcast_join_ipv4()/6
+    Here we define only port of local structure because this
+    socket is used by AvahiServer and is used to join multicast
+    group. we pick the address further from local interface
+    and joing the group.(ip_mreqn)
+    avahi_mcast_join_ipv4()/6
 */
     local.sin_port = htons(proto == AVAHI_LLMNR ? AVAHI_LLMNR_PORT : AVAHI_MDNS_PORT);
 
@@ -368,8 +368,8 @@ int avahi_open_socket_ipv4(int no_reuse,AvahiPublishProtocol proto) {
     if (r < 0)
         goto fail;
 /*
-	Just set socket options on 'fd'. No header
-	is passed.
+    Just set socket options on 'fd'. No header
+    is passed.
 */
     if (ipv4_pktinfo (fd) < 0)
          goto fail;
@@ -496,7 +496,7 @@ int avahi_send_dns_packet_ipv4(
         const AvahiIPv4Address *src_address,
         const AvahiIPv4Address *dst_address,
         uint16_t dst_port,
-		AvahiPublishProtocol proto) {
+        AvahiPublishProtocol proto) {
 
     struct sockaddr_in sa;
     struct msghdr msg;
@@ -515,9 +515,9 @@ int avahi_send_dns_packet_ipv4(
     assert(!dst_address || dst_port > 0);
 
     if (!dst_address) {
-		assert(proto != AVAHI_WIDE_AREA);
+        assert(proto != AVAHI_WIDE_AREA);
         mcast_group_ipv4(&sa, proto);
-	} else 
+    } else
         ipv4_address_to_sockaddr(&sa, dst_address, dst_port);
 
     memset(&io, 0, sizeof(io));
@@ -592,7 +592,7 @@ int avahi_send_dns_packet_ipv6(
         const AvahiIPv6Address *src_address,
         const AvahiIPv6Address *dst_address,
         uint16_t dst_port,
-	AvahiPublishProtocol proto) {
+    AvahiPublishProtocol proto) {
 
     struct sockaddr_in6 sa;
     struct msghdr msg;
@@ -606,9 +606,9 @@ int avahi_send_dns_packet_ipv6(
     assert(!dst_address || dst_port > 0);
 
     if (!dst_address) {
-		assert(proto != AVAHI_WIDE_AREA);
+        assert(proto != AVAHI_WIDE_AREA);
         mcast_group_ipv6(&sa, proto);
-	} else 
+    } else
         ipv6_address_to_sockaddr(&sa, dst_address, dst_port);
 
     memset(&io, 0, sizeof(io));
@@ -705,7 +705,7 @@ AvahiDnsPacket *avahi_recv_dns_packet_ipv4(
 
         goto fail;
     }
-    
+
     if (sa.sin_addr.s_addr == INADDR_ANY) {
         /* Linux 2.4 behaves very strangely sometimes! */
         goto fail;

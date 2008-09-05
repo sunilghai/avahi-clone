@@ -57,7 +57,7 @@ typedef struct AvahiLegacyUnicastReflectSlot AvahiLegacyUnicastReflectSlot;
 
 struct AvahiLegacyUnicastReflectSlot {
     AvahiServer *server;
-    
+
     uint16_t id, original_id;
     AvahiAddress address;
     uint16_t port;
@@ -76,7 +76,7 @@ struct AvahiEntry {
     AvahiSEntryGroup *group;
 
     int dead;
-    
+
     AvahiPublishFlags flags;
     AvahiRecord *record;
     AvahiIfIndex interface;
@@ -85,20 +85,20 @@ struct AvahiEntry {
     AVAHI_LLIST_FIELDS(AvahiEntry, entries);
     AVAHI_LLIST_FIELDS(AvahiEntry, by_key);
     AVAHI_LLIST_FIELDS(AvahiEntry, by_group);
-    
+
     /* Type to decide whether an mDNS entry of LLMNR */
     AvahiEntryType type;
 
     union {
-        
+
         struct {
             AVAHI_LLIST_HEAD(AvahiAnnouncer, announcers);
         }mdns;
-        
+
         struct {
             AVAHI_LLIST_HEAD(AvahiLLMNREntryVerify, verifiers);
         }llmnr;
-            
+
     } proto;
 };
 
@@ -116,32 +116,32 @@ struct AvahiSEntryGroup {
     AvahiEntryGroupState state;
     void* userdata;
     AvahiSEntryGroupCallback callback;
-    
+
     AvahiSEntryGroupType type;
     union {
-    
+
         struct {
-            unsigned n_probing;            
+            unsigned n_probing;
             unsigned n_register_try;
-            
+
             struct timeval register_time;
             AvahiTimeEvent *register_time_event;
             struct timeval established_at;
         }mdns;
-        
+
         struct {
             unsigned n_verifying;
         }llmnr;
-        
+
     }proto;
-    
+
     AVAHI_LLIST_FIELDS(AvahiSEntryGroup, groups);
     AVAHI_LLIST_HEAD(AvahiEntry, entries);
 };
 
 struct AvahiServer {
     const AvahiPoll *poll_api;
-    
+
     AvahiInterfaceMonitor *monitor;
     AvahiServerConfig config;
 
@@ -150,8 +150,8 @@ struct AvahiServer {
         AVAHI_LLIST_HEAD(AvahiEntry, entries);
         AvahiHashmap *entries_by_key;
         AVAHI_LLIST_HEAD(AvahiSEntryGroup, groups);
-        int need_entry_cleanup, need_group_cleanup;        
-        
+        int need_entry_cleanup, need_group_cleanup;
+
         /*mDNS sockets and watch objects */
         int fd_ipv4, fd_ipv6,
         /* The following two sockets two are used for reflection only */
@@ -159,40 +159,40 @@ struct AvahiServer {
 
         AvahiWatch *watch_ipv4, *watch_ipv6,
             *watch_legacy_unicast_ipv4, *watch_legacy_unicast_ipv6;
-            
+
         /* mDNS record list to assemble responses*/
         AvahiRecordList *record_list;
-    
+
         AvahiSEntryGroup *hinfo_entry_group;
         AvahiSEntryGroup *browse_domain_entry_group;
-      
+
         AvahiMulticastLookupEngine *multicast_lookup_engine;
-    
+
     }mdns;
-    
+
     struct {
         /* LLMNR entries and groups */
         AVAHI_LLIST_HEAD(AvahiEntry, entries);
         AvahiHashmap *entries_by_key;
         AVAHI_LLIST_HEAD(AvahiSEntryGroup, groups);
         int need_entry_cleanup, need_group_cleanup;
-        
+
         /* LLMNR sockets and watch objects */
         int fd_ipv4, fd_ipv6;
         AvahiWatch *watch_ipv4, *watch_ipv6;
-    
+
         /* LLMNR record list to assemble LLMNR responses */
-        AvahiRecordList *record_list;    
-        
+        AvahiRecordList *record_list;
+
         AvahiLLMNRLookupEngine *llmnr_lookup_engine;
-    
+
     }llmnr;
-    
+
     struct {
         AvahiWideAreaLookupEngine *wide_area_lookup_engine;
     }wide_area;
 
-    
+
     AVAHI_LLIST_HEAD(AvahiSRecordBrowser, record_browsers);
     AvahiHashmap *record_browser_hashmap;
     AVAHI_LLIST_HEAD(AvahiSHostNameResolver, host_name_resolvers);
@@ -204,9 +204,9 @@ struct AvahiServer {
     AVAHI_LLIST_HEAD(AvahiSDNSServerBrowser, dns_server_browsers);
 
     int need_browser_cleanup;
-    
+
     AvahiTimeEventQueue *time_event_queue;
-    
+
     char *host_name, *host_name_fqdn, *domain_name;
 
     AvahiServerState state;
@@ -257,8 +257,8 @@ int avahi_server_add_ptr(
     AvahiIfIndex interface,
     AvahiProtocol protocol,
     AvahiPublishFlags flags,
-    uint32_t ttl,          
-    const char *name,      
+    uint32_t ttl,
+    const char *name,
     const char *dest);
 
 #define AVAHI_CHECK_VALIDITY(server, expression, error) { \

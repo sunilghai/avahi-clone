@@ -135,7 +135,7 @@ uint8_t* avahi_llmnr_packet_append_record(AvahiDnsPacket *p, AvahiRecord *r, uns
          ((uint16_t) !!ad << 5) | \
          ((uint16_t) !!cd << 4) | \
          ((uint16_t) (rcode & 15)))
-         
+
 #define AVAHI_LLMNR_FLAGS(qr, opcode, c, tc, t, z,rcode) \
         (((uint16_t) !!qr << 15) |  \
          ((uint16_t) (opcode & 15) << 11) | \
@@ -144,7 +144,7 @@ uint8_t* avahi_llmnr_packet_append_record(AvahiDnsPacket *p, AvahiRecord *r, uns
          ((uint16_t) !!t << 8) | \
          ((uint16_t) (z & 15) << 4) | \
          ((uint16_t) (rcode & 15)))
-         
+
 #define AVAHI_MDNS_SUFFIX_LOCAL "local"
 #define AVAHI_MDNS_SUFFIX_ADDR_IPV4 "254.169.in-addr.arpa"
 #define AVAHI_MDNS_SUFFIX_ADDR_IPV6 "0.8.e.f.ip6.arpa"
