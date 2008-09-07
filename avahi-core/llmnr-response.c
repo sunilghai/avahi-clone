@@ -18,6 +18,10 @@
   USA.
 ***/
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stdlib.h>
 #include <avahi-common/malloc.h>
 #include <avahi-core/log.h>

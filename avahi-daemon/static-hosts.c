@@ -2,7 +2,7 @@
 
 /***
   This file is part of avahi.
- 
+
   avahi is free software; you can redistribute it and/or modify it
   under the terms of the GNU Lesser General Public License as
   published by the Free Software Foundation; either version 2.1 of the
@@ -117,8 +117,9 @@ static StaticHost *static_host_find(const char *host, const AvahiAddress *a, int
     assert(a);
 
     for (h = hosts; h; h = h->hosts_next)
-        if (!strcmp(h->host, host) && !avahi_address_cmp(a, &h->address) &&
-            (h->publish_proto == 0 || h->publish_proto == publish_proto))
+        if (!strcmp(h->host, host) &&
+            !avahi_address_cmp(a, &h->address) &&
+            (h->publish_proto == publish_proto))
             return h;
 
     return NULL;
@@ -157,24 +158,6 @@ static void remove_static_host_from_server(StaticHost *h)
         avahi_s_entry_group_reset (h->group);
 }
 
-static int avahi_proto_to_value(char *publish_proto, int *value) {
-    assert(publish_proto);
-
-    if (!strcmp(publish_proto, "mDNS"))
-        *value = AVAHI_PUBLISH_USE_MULTICAST;
-
-    else if (!strcmp(publish_proto, "LLMNR"))
-        *value = AVAHI_PUBLISH_USE_LLMNR;
-
-    else if (!strcmp(publish_proto, "UNSPEC"))
-        *value = 0;
-
-    else
-        return 0;
-
-    return 1;
-}
-
 void static_hosts_add_to_server(void) {
     StaticHost *h;
 
@@ -208,7 +191,7 @@ void static_hosts_load(int in_chroot) {
         char ln[256], *s;
         char *host, *ip, *publish_proto;
         AvahiAddress a;
-        int publish_proto_value;
+        int publish_proto_value = 0 ; /* By default */
 
         if (!fgets(ln, sizeof (ln), f))
             break;
@@ -241,57 +224,53 @@ void static_hosts_load(int in_chroot) {
             avahi_log_error("%s:%d: Error, unexpected end of line!", filename, line);
             avahi_free(host);
             avahi_free(ip);
+            avahi_free(publish_proto);
             goto fail;
         }
 
         /* Skip over the host */
         s += len;
 
-        /* Find the next token i.e protocol */
+        /* Next could be Nothing/Junk/"LLMNR" */
         s += strspn(s, " \t");
-        len = strcspn(s, " \t");
-        publish_proto = avahi_strndup(s, len);
 
-        if (*publish_proto == 0)
-        {
-            avahi_log_error("%s:%d: Error, unexpected end of line!", filename, line);
+        if (*s != 0) { /* Either "LLMNR" or Junk. Check. */
+            len = strcspn(s, " \t");
+            publish_proto = avahi_strndup(s, len);
+
+            if (!strcmp(publish_proto, "LLMNR"))
+                publish_proto_value = AVAHI_PUBLISH_USE_LLMNR;
+            else {
+                avahi_log_error("Static host name %s: failed to parse Publish Protocol %s", host, ip);
+                avahi_free(publish_proto);
+                avahi_free(host);
+                avahi_free(ip);
+                goto fail;
+            }
             avahi_free(publish_proto);
-            avahi_free(host);
-            avahi_free(ip);
-            goto fail;
-        }
 
-        /* Skip over the proto */
-        s += len;
+            /* Skip over the proto */
+            s += len;
 
-        /* Skip past any more spaces */
-        s += strspn(s, " \t");
+            /* Next : Check for Junk. */
+            s += strspn(s, " \t");
 
-        /* Anything left? */
-        if (*s != 0) {
-            avahi_log_error ("%s:%d: Junk on the end of the line!", filename, line);
-            avahi_free(host);
-            avahi_free(ip);
-            goto fail;
+            /* Anything left? */
+            if (*s != 0) {
+                avahi_log_error ("%s:%d: Junk on the end of the line!", filename, line);
+                avahi_free(host);
+                avahi_free(ip);
+                goto fail;
+            }
         }
 
         if (!avahi_address_parse(ip, AVAHI_PROTO_UNSPEC, &a)) {
             avahi_log_error("Static host name %s: failed to parse address %s", host, ip);
-            avahi_free(publish_proto);
             avahi_free(host);
             avahi_free(ip);
             goto fail;
         }
         avahi_free(ip);
-
-        if(!avahi_proto_to_value(publish_proto, &publish_proto_value)) {
-            avahi_log_error("Static host name %s: failed to parse publish protocol %s", host, ip);
-            avahi_free(publish_proto);
-            avahi_free(host);
-            avahi_free(ip);
-            goto fail;
-        }
-        avahi_free(publish_proto);
 
         if ((h = static_host_find(host, &a, publish_proto_value)))
             avahi_free(host);

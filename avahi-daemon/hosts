@@ -17,21 +17,31 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 # USA.
 
-# This file contains static ip address <-> host name mappings.  These
+# This file contains static ip address <-> host name mappings. These
 # can be useful to publish services on behalf of a non-avahi enabled
 # device.
+#
+# Host names to be published via multicast DNS are expected to be fully
+# qualified domain name. i.e ending in .local and single-label-names
+# would be published using LLMNR.
+#
+# You can also specify LLMNR at the end of the entry, if you want a
+# fully qualified domain name to be published using LLMNR
+# (No restriction in format of FQDN in this case).
 
-# <address> <host name> <publish protocol : UNSPEC/mDNS/LLMNR>
-# UNSPEC : If you don't know what to do.
-# mDNS : If you want to publish host name using mDNS protocol, Please
-# bear in mind that host names published using mDNS are expected to be
-# fully qualified domain names, i.e. ending in .local!
-# LLMNR : If you want to publish name using LLMNR protocol. In this case
-# host name could be a single label name or FQDN.
 # See avahi.hosts(5) for more information on this configuration file!
 
 # Examples:
-#10.1.147.1 orange.local mDNS
-#10.1.147.2 mango LLMNR
-#10.1.147.2 router.local UNSPEC
-#2001::81:1 test.local UNSPEC
+
+# This entry would be published using mDNS [name ending with .local]
+# 10.1.147.1 orange.local
+
+# This entry would be published using LLMNR [single-label-name]
+# 10.1.147.2 mango
+
+# Specify LLMNR at the end of the line if you want FQDN to be published
+# via LLMNR, like [without any restriction in FQDN]
+# 10.1.147.3 abc.xyz.com LLMNR
+# 10.1.147.4 mango.local LLMNR
+
+# 2001::81:1 test.local

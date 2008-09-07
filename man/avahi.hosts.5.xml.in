@@ -32,14 +32,16 @@
     <description>
       <p><file>@pkgsysconfdir@/hosts</file> is a file which may be used
       to define static host name to IP address mappings for multicast
-      DNS. This is especially useful when publishing DNS-SD services
-      on behalf of other hosts. See <manref name="avahi.service"
-      section="5"/> for more information.</p>
+      DNS or LLMNR. This is especially useful when publishing DNS-SD  
+      services or LLMNR single-label-host-names on behalf of other hosts. 
+      See <manref name="avahi.service" section="5"/> for more information
+      about DNS-SD services.</p>
 
       <p>The file format is similar to the one of
       <file>/etc/hosts</file>: on each line an IP address and the
       corresponding host name. The host names should be in FQDN form,
-      i.e. with appended .local suffix.</p>
+      i.e. with appended .local suffix for mDNS or a single-label-name 
+      for LLMNR.</p>
     </description>
 
 	<section name="Authors">
